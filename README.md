@@ -96,6 +96,7 @@ Your final `.exe` will appear in the `dist/` directory.
 ├── config.py
 ├── dragdrop.py
 ├── altomatic_icon.ico
+├── requirements.txt
 └── README.md
 ```
 
