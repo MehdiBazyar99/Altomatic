@@ -112,4 +112,3 @@ Your OpenAI API key is stored in an encoded format and never transmitted anywher
 
 **Mehdi Bazyar**  
 GitHub: [https://github.com/MehdiBazyar99](https://github.com/MehdiBazyar99)
-همچنین اگه خواستی نسخه فارسی به‌روز و هماهنگ با این رو هم بنویسم، کافیه بگی ✅
