@@ -116,10 +116,22 @@ def extract_text_from_image(image_path, tesseract_path="", lang="eng"):
     try:
         from PIL import Image
         import pytesseract
+        # Attempt to import TesseractNotFoundError specifically
+        try:
+            from pytesseract import TesseractNotFoundError
+        except ImportError:
+            TesseractNotFoundError = None # Fallback if not found directly
+
         if tesseract_path:
             pytesseract.pytesseract.tesseract_cmd = tesseract_path
+        
         image = Image.open(image_path)
         text = pytesseract.image_to_string(image, lang=lang)
         return text.strip()
-    except Exception as e:
-        return f"⚠️ OCR failed: {e}"
+    except TesseractNotFoundError as e: # Specific catch if import worked
+        # This error message is more user-friendly and guides towards a solution.
+        # The calling function (in ai_handler.py) will log this.
+        return f"⚠️ OCR failed: Tesseract is not installed or not found in your PATH. Please install Tesseract and/or set the path in Altomatic's settings. Details: {e}"
+    except Exception as e: # General catch-all for other pytesseract or PIL errors
+        # The calling function will log this generic error.
+        return f"⚠️ OCR failed: An unexpected error occurred during OCR. Details: {e}"

@@ -7,14 +7,13 @@ Communicates with OpenAI's GPT-4.1-nano for image description.
 - Logs usage tokens (if available) and accumulates them in state['total_tokens']
 """
 
-from openai import OpenAI
+from openai import OpenAI, APIError, APIConnectionError, RateLimitError, AuthenticationError, BadRequestError 
 import json
-from helpers import image_to_base64, extract_text_from_image
-from ui_components import append_monitor_colored
+from .helpers import image_to_base64, extract_text_from_image
 
-MODEL = "gpt-4.1-nano"
+# MODEL = "gpt-4.1-nano" # Commented out as per instructions
 
-def describe_image(state, image_path: str) -> dict | None:
+def describe_image(logger, state, image_path: str) -> dict | None:
     """
     Describes the image using GPT-4.1-nano, reading user settings from 'state'.
     
@@ -43,10 +42,10 @@ def describe_image(state, image_path: str) -> dict | None:
         ocr_result = extract_text_from_image(image_path, tesseract_path, ocr_lang)
         if ocr_result.startswith("⚠️ OCR failed:"):
             # Log error but continue with empty OCR text
-            append_monitor_colored(state, ocr_result, "error")
+            logger.error(ocr_result)
             ocr_text = ""
         else:
-            append_monitor_colored(state, f"[OCR RESULT] {ocr_result}", "warn")
+            logger.warn(f"[OCR RESULT] {ocr_result}")
             ocr_text = ocr_result
     else:
         ocr_text = ""
@@ -83,30 +82,59 @@ def describe_image(state, image_path: str) -> dict | None:
     prompt += f"\nThe 'alt' should be written in {alt_lang}."
 
     try:
-        response = client.responses.create(
-            model=MODEL,
-            input=[{
+        model_name_from_state = state.get('ai_model', 'gpt-4.1-nano') # Default if not in state
+        logger.info(f"Using AI Model: {model_name_from_state}") # Log the model being used
+        response = client.responses.create( # Changed from client.chat.completions.create
+            model=model_name_from_state,
+            input=[{ # Assuming this is the correct structure for gpt-4.1-nano image input
                 "role": "user",
                 "content": [
                     {"type": "input_text", "text": prompt},
                     {"type": "input_image", "image_url": b64_image, "detail": vision_detail}
                 ]
             }],
-            text={"format": {"type": "json_object"}}
+            text={"format": {"type": "json_object"}} # Changed from response_format
         )
 
-        # Show raw output for debugging
-        append_monitor_colored(state, f"[API RAW OUTPUT]\n{response.output_text}", "info")
+        # Log raw output for debugging (if logger has a debug level)
+        if hasattr(logger, 'debug'):
+            logger.debug(f"[API RAW OUTPUT]\n{response.output_text}")
+        else:
+            logger.info(f"[API RAW OUTPUT - First 100 chars]\n{response.output_text[:100]}")
 
-        # If usage is available, log tokens
+
         if response.usage:
             used = response.usage.total_tokens
-            append_monitor_colored(state, f"[TOKEN USAGE] +{used} tokens", "token")
-            prev = state['total_tokens'].get()
-            state['total_tokens'].set(prev + used)
+            logger.token(f"+{used} tokens") # Assuming logger has a 'token' method
+            
+            # Update total_tokens in state (ensure state['total_tokens'] is an int)
+            # In the PyQt app, state['total_tokens'] is passed as an int initially (0)
+            # and is managed directly as an int within logic.py context.
+            # Here, we ensure it's handled correctly if it were to be modified directly in ai_handler.
+            if 'total_tokens' not in state or not isinstance(state['total_tokens'], int):
+                state['total_tokens'] = 0 # Initialize if not present or wrong type
+            state['total_tokens'] += used
 
         return json.loads(response.output_text)
 
+    except AuthenticationError as e:
+        logger.error(f"[API Auth Error] Please check your OpenAI API key. Details: {e}")
+        return None
+    except RateLimitError as e:
+        logger.error(f"[API Rate Limit Error] You have exceeded your current quota or rate limit. Details: {e}")
+        return None
+    except APIConnectionError as e:
+        logger.error(f"[API Connection Error] Could not connect to OpenAI. Check your network. Details: {e}")
+        return None
+    except BadRequestError as e: # Often due to invalid request structure or model parameters
+        logger.error(f"[API Bad Request Error] The request to OpenAI was invalid (e.g., bad model name, malformed input). Details: {e}")
+        return None
+    except APIError as e: # More generic OpenAI API error
+        logger.error(f"[OpenAI API Error] An API error occurred. Details: {e}")
+        return None
+    except json.JSONDecodeError as e:
+        logger.error(f"[API Response JSON Error] Failed to parse JSON from model response. Details: {e}. Response text: {response.output_text if 'response' in locals() else 'N/A'}")
+        return None
     except Exception as e:
-        append_monitor_colored(state, f"[API ERROR] {e}", "error")
+        logger.error(f"[Unexpected API Handler Error] An unexpected error occurred: {e}")
         return None

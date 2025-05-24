@@ -1,0 +1,22 @@
+/* Pinky Theme - A playful, light-hearted theme */
+QMainWindow { background-color: #FFF0F5; /* LavenderBlush */ }
+QWidget { background-color: #FFFFFF; color: #6A0DAD; } /* White bg, Purple text */
+QTabWidget::pane { border-top: 1px solid #FFB6C1; background-color: #FFFFFF; } /* LightPink border */
+QTabBar::tab { background-color: #FFB6C1; color: #6A0DAD; padding: 8px; } /* LightPink bg, Purple text */
+QTabBar::tab:selected { background-color: #FFA07A; } /* LightSalmon for selected tab */
+QLabel { color: #6A0DAD; background-color: transparent; } /* Purple text */
+QPushButton { background-color: #FF69B4; color: #FFFFFF; border: 1px solid #FF1493; padding: 5px; } /* HotPink bg, DeepPink border */
+QPushButton:hover { background-color: #FF1493; } /* DeepPink */
+QPushButton:pressed { background-color: #C71585; } /* MediumVioletRed */
+QLineEdit { background-color: #FFF0F5; color: #6A0DAD; border: 1px solid #FFB6C1; padding: 3px; } /* LavenderBlush bg, LightPink border */
+QComboBox { background-color: #FFF0F5; color: #6A0DAD; border: 1px solid #FFB6C1; padding: 3px; }
+QComboBox QAbstractItemView { background-color: #FFF0F5; color: #6A0DAD; selection-background-color: #FFB6C1; } /* LightPink selection */
+QTextEdit { background-color: #FFF0F5; color: #6A0DAD; border: 1px solid #FFB6C1; }
+QProgressBar { color: #6A0DAD; background-color: #FFF0F5; border: 1px solid #FFB6C1; text-align: center; }
+QProgressBar::chunk { background-color: #FF69B4; } /* HotPink */
+QCheckBox { color: #6A0DAD; } /* Purple text */
+QMenuBar { background-color: #FFB6C1; color: #6A0DAD; } /* LightPink */
+QMenuBar::item { background-color: transparent; color: #6A0DAD; }
+QMenuBar::item:selected { background-color: #FFA07A; color: #FFFFFF; } /* LightSalmon */
+QMenu { background-color: #FFF0F5; color: #6A0DAD; border: 1px solid #FFB6C1; } /* LavenderBlush, LightPink border */
+QMenu::item:selected { background-color: #FFA07A; color: #FFFFFF; } /* LightSalmon */

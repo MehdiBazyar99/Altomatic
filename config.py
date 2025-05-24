@@ -54,6 +54,8 @@ DEFAULT_CONFIG = {
     'tesseract_path': "",
     'ocr_language': "eng",
     'ui_theme': "Light",
+    'total_accumulated_tokens': 0, # New key for tracking all-time token usage
+    'ai_model': 'gpt-4.1-nano', # New key for AI model selection
 }
 
 def load_config():
@@ -75,24 +77,49 @@ def load_config():
     except Exception:
         return DEFAULT_CONFIG.copy()
 
-def save_config(state, geometry):
+def save_config(config_data, window_geometry_str=None):
     """
-    Saves the relevant config keys to disk.
-    Obfuscates the openai_api_key, excludes ephemeral values like input path.
+    Saves the current settings from the 'config_data' dictionary to CONFIG_FILE.
+    API key is obfuscated.
+    'config_data' should be a dictionary with direct values.
+    'window_geometry_str' is an optional string like "800x600".
     """
-    data = {}
-    for key in DEFAULT_CONFIG:
-        if key == 'window_geometry':
-            data['window_geometry'] = geometry
-        elif key == 'openai_api_key':
-            plain = state['openai_api_key'].get()
-            data['openai_api_key'] = obfuscate_api_key(plain)
-        else:
-            data[key] = state[key].get()
+    data_to_save = {}
+    # Iterate over keys in config_data plus keys in DEFAULT_CONFIG to ensure all are covered
+    all_keys = set(config_data.keys()) | set(DEFAULT_CONFIG.keys())
+
+    for key in all_keys:
+        if key == 'window_geometry': # Skip, handled by window_geometry_str later
+            continue
+        
+        value = config_data.get(key)
+
+        if key == 'openai_api_key':
+            # Expects plain API key, will be encoded.
+            # If value is None (key not in config_data), encode as empty string from DEFAULT_CONFIG.
+            plain_api_key = value if value is not None else DEFAULT_CONFIG.get(key, "")
+            data_to_save[key] = obfuscate_api_key(plain_api_key) if plain_api_key else ""
+        elif value is not None: # For other keys, save if value is provided in config_data
+            data_to_save[key] = value
+        elif key in DEFAULT_CONFIG: # If key from DEFAULT_CONFIG is missing in config_data, save the default.
+            data_to_save[key] = DEFAULT_CONFIG[key]
+        # If a key is in config_data but not in DEFAULT_CONFIG and not None, it's saved.
+        # If a key is not in config_data and not in DEFAULT_CONFIG, it's ignored.
+
+    # Handle window_geometry separately
+    if window_geometry_str:
+        data_to_save['window_geometry'] = window_geometry_str
+    elif 'window_geometry' in config_data and config_data['window_geometry'] is not None: 
+        data_to_save['window_geometry'] = config_data['window_geometry']
+    elif 'window_geometry' in DEFAULT_CONFIG: # Ensure it's always set if not provided
+        data_to_save['window_geometry'] = DEFAULT_CONFIG['window_geometry']
+    else: # Fallback if not in DEFAULT_CONFIG for some reason
+        data_to_save['window_geometry'] = "900x600"
+
 
     try:
         with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
+            json.dump(data_to_save, f, indent=2, ensure_ascii=False)
     except Exception as e:
         print(f"⚠️ Could not save config: {e}")
 

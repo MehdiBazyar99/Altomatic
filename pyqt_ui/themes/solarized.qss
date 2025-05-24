@@ -1,0 +1,22 @@
+/* Solarized Dark-inspired Theme */
+QMainWindow { background-color: #002b36; /* base03 */ }
+QWidget { background-color: #073642; color: #839496; } /* base02, base0 */
+QTabWidget::pane { border-top: 1px solid #001f27; background-color: #073642; } /* Darker variant of base03 for border */
+QTabBar::tab { background-color: #001f27; color: #839496; padding: 8px; } /* Darker base02 */
+QTabBar::tab:selected { background-color: #0A495A; } /* Slightly lighter/more saturated base02 */
+QLabel { color: #93a1a1; background-color: transparent; } /* base1 */
+QPushButton { background-color: #268bd2; color: #ffffff; border: 1px solid #1a5f90; padding: 5px; } /* blue, white text */
+QPushButton:hover { background-color: #1f78b8; }
+QPushButton:pressed { background-color: #1a5f90; }
+QLineEdit { background-color: #003949; color: #839496; border: 1px solid #001f27; padding: 3px; } /* Darker base02 variant */
+QComboBox { background-color: #003949; color: #839496; border: 1px solid #001f27; padding: 3px; }
+QComboBox QAbstractItemView { background-color: #003949; color: #839496; selection-background-color: #268bd2; } /* blue selection */
+QTextEdit { background-color: #003949; color: #839496; border: 1px solid #001f27; }
+QProgressBar { color: #839496; background-color: #003949; border: 1px solid #001f27; text-align: center; }
+QProgressBar::chunk { background-color: #859900; } /* green */
+QCheckBox { color: #93a1a1; } /* base1 */
+QMenuBar { background-color: #002b36; color: #93a1a1; } /* base03, base1 */
+QMenuBar::item { background-color: transparent; color: #93a1a1; }
+QMenuBar::item:selected { background-color: #073642; color: #ffffff; } /* base02 */
+QMenu { background-color: #073642; color: #93a1a1; border: 1px solid #001f27; } /* base02, base1 */
+QMenu::item:selected { background-color: #268bd2; color: #ffffff; } /* blue */
