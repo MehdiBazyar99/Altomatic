@@ -75,20 +75,29 @@ def load_config():
     except Exception:
         return DEFAULT_CONFIG.copy()
 
-def save_config(state, geometry):
+def save_config(settings_dict: dict, window_geometry_str: str):
     """
     Saves the relevant config keys to disk.
-    Obfuscates the openai_api_key, excludes ephemeral values like input path.
+    Obfuscates the openai_api_key.
+    'settings_dict' should contain all keys from DEFAULT_CONFIG except 'window_geometry'.
+    'window_geometry_str' is a string like "900x600".
     """
-    data = {}
+    data_to_save = {}
     for key in DEFAULT_CONFIG:
         if key == 'window_geometry':
-            data['window_geometry'] = geometry
+            data_to_save['window_geometry'] = window_geometry_str
         elif key == 'openai_api_key':
-            plain = state['openai_api_key'].get()
-            data['openai_api_key'] = obfuscate_api_key(plain)
+            # Ensure API key is present in settings_dict, even if empty
+            plain_api_key = settings_dict.get('openai_api_key', '')
+            data_to_save['openai_api_key'] = obfuscate_api_key(plain_api_key)
+        elif key in settings_dict: # Check if key exists in provided dict
+            data_to_save[key] = settings_dict[key]
         else:
-            data[key] = state[key].get()
+            # If a key from DEFAULT_CONFIG is missing in settings_dict (should not happen if populated correctly)
+            # save the default value for that key.
+            data_to_save[key] = DEFAULT_CONFIG[key] 
+            print(f"⚠️ Warning: Key '{key}' not found in settings_dict for saving. Using default.")
+
 
     try:
         with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
